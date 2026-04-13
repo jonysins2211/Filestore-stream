@@ -759,6 +759,8 @@ async def watch_handler(request: web.Request):
     encoded_name = quote_plus(file_name)
     stream_url = f"{base}/stream/{msg_id}?hash={file_hash}&name={encoded_name}"
     download_url = f"{base}/dl/{msg_id}?hash={file_hash}&name={encoded_name}"
+    vlc_url = f"vlc://{stream_url}"
+    mx_url = f"mxplayer://play?url={quote_plus(stream_url)}"
 
     # Detect mime type from file name
     mime_type, _ = mimetypes.guess_type(file_name)
@@ -775,7 +777,8 @@ async def watch_handler(request: web.Request):
         stream_url,         # <video src>
         mime_type,          # <source type>
         download_url,       # Fast Download button href
-        stream_url,         # Watch Online button href
+        vlc_url,            # VLC button href
+        mx_url,             # MX Player button href
     )
     return web.Response(text=html, content_type="text/html")
 
