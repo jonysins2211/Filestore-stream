@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>%s | Movie Loverz</title>
+    <link rel="shortcut icon" href="https://i.ibb.co/hxYHF30b/photo-2026-03-10-13-33-57-7615619723304108064.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.9/plyr.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg: #0a0a0a;
+            --card: #151515;
+            --text: #ffffff;
+            --sub: #888888;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #111111;
+            border-bottom: 1px solid #222;
+            padding: 12px 24px;
+        }
+        .navbar-brand {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .file-title {
+            background: #111;
+            padding: 16px 24px;
+            border-bottom: 1px solid #222;
+            text-align: center;
+        }
+        .file-title h5 {
+            color: #ccc;
+            font-size: 0.95rem;
+            font-weight: 400;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .player-container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        .player-wrap {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,255,136,0.08), 0 4px 16px rgba(0,0,0,0.6);
+            border: 1px solid #222;
+        }
+        .btn-download {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #00ff88, #00ccaa);
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 14px 32px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            width: 100%%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .btn-download:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,255,136,0.3);
+            color: #000;
+        }
+        .btn-stream {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: transparent;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 13px 32px;
+            border-radius: 50px;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            width: 100%%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .btn-stream:hover {
+            background: rgba(0,255,136,0.1);
+            transform: translateY(-3px);
+            color: var(--primary);
+        }
+        .action-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin: 24px 0;
+        }
+        .info-card {
+            background: var(--card);
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--sub);
+            text-align: center;
+        }
+        .info-card span { color: var(--primary); font-weight: 600; }
+        footer {
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid #1a1a1a;
+            color: #444;
+            font-size: 0.8rem;
+            margin-top: 40px;
+        }
+        footer a { color: var(--primary); text-decoration: none; }
+        .plyr--video { border-radius: 16px; }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .player-container { padding: 0 8px; margin: 16px auto; }
+            .btn-download, .btn-stream { font-size: 0.9rem; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" href="https://t.me/Movie_loverzz">🎬 Movie Loverz</a>
+    <a href="https://t.me/Movie_loverzz" target="_blank" class="btn btn-sm" style="background:#00ff88;color:#000;font-weight:600;border-radius:20px;padding:6px 16px;">
+        Join Channel
+    </a>
+</nav>
+
+<div class="file-title">
+    <h5>%s</h5>
+</div>
+
+<div class="player-container">
+
+    <!-- Video Player -->
+    <div class="player-wrap">
+        <video class="player" playsinline controls data-poster="">
+            <source src="%s" type="%s" />
+        </video>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-btns">
+        <a href="%s" class="btn-download">
+            ⚡ Fast Download
+        </a>
+        <a href="%s" class="btn-stream">
+            🖥️ Watch Online / Stream
+        </a>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card">
+        🔔 <span>Note:</span> If video doesn't play, use the <strong>Fast Download</strong> button to download directly.<br>
+        Join <a href="https://t.me/Movie_loverzz" target="_blank">@Movie_loverzz</a> for more movies & updates!
+    </div>
+
+</div>
+
+<footer>
+    © 2025 <a href="https://t.me/Movie_loverzz">Movie Loverz</a> · Powered by Hawkeye
+</footer>
+
+<script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
+<script>
+    const controls = [
+        'play-large', 'rewind', 'play', 'fast-forward',
+        'progress', 'current-time', 'duration',
+        'mute', 'volume', 'settings', 'pip', 'airplay',
+        'download', 'fullscreen'
+    ];
+    document.addEventListener('DOMContentLoaded', () => {
+        const player = new Plyr('.player', { controls });
+    });
+</script>
+
+</body>
+</html>
