@@ -759,8 +759,9 @@ async def watch_handler(request: web.Request):
     encoded_name = quote_plus(file_name)
     stream_url = f"{base}/stream/{msg_id}?hash={file_hash}&name={encoded_name}"
     download_url = f"{base}/dl/{msg_id}?hash={file_hash}&name={encoded_name}"
-    vlc_url = f"vlc://{stream_url}"
-    mx_url = f"mxplayer://play?url={quote_plus(stream_url)}"
+    # Android app deep-links (more reliable than custom vlc:// or mxplayer:// schemes in modern browsers)
+    vlc_url = f"intent:{stream_url}#Intent;package=org.videolan.vlc;type=video/*;end"
+    mx_url = f"intent:{stream_url}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end"
 
     # Detect mime type from file name
     mime_type, _ = mimetypes.guess_type(file_name)
@@ -846,14 +847,17 @@ async def stream_download_handler(request: web.Request):
         async for chunk in bot_instance.stream_media(message, offset=from_bytes, limit=req_length):
             yield chunk
 
+    headers = {
+        "Content-Type": media_mime,
+        "Content-Length": str(req_length),
+        "Content-Disposition": f'{disposition}; filename="{media_name}"',
+        "Accept-Ranges": "bytes",
+    }
+    if range_header:
+        headers["Content-Range"] = f"bytes {from_bytes}-{until_bytes}/{file_size}"
+
     return web.Response(
         status=206 if range_header else 200,
         body=file_iter(),
-        headers={
-            "Content-Type": media_mime,
-            "Content-Range": f"bytes {from_bytes}-{until_bytes}/{file_size}",
-            "Content-Length": str(req_length),
-            "Content-Disposition": f'{disposition}; filename="{media_name}"',
-            "Accept-Ranges": "bytes",
-        },
+        headers=headers,
     )
