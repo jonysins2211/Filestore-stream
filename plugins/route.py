@@ -5,12 +5,22 @@ import time
 import json
 import os
 import ipaddress
+from urllib.parse import quote_plus
 from datetime import datetime
 from collections import defaultdict
 from database.database import db
 from config import BASE_URL, LOGGER, SHORTLINK_URL
 
 routes = web.RouteTableDef()
+
+
+def _active_bot_instance():
+    """Return running Bot instance for web handlers."""
+    from bot import Bot
+    bot_instance = getattr(Bot, "_running_instance", None)
+    if not bot_instance:
+        raise web.HTTPServiceUnavailable(text="Bot is not ready yet")
+    return bot_instance
 
 # ======================== IP RATE LIMITER ======================== #
 
@@ -734,8 +744,7 @@ def _load_template(name: str) -> str:
 @routes.get("/watch/{msg_id}", allow_head=True)
 async def watch_handler(request: web.Request):
     """Serve the online watch/stream page for a file."""
-    from config import BASE_URL, CHANNEL_ID
-    from bot import Bot
+    from config import BASE_URL
 
     msg_id_str = request.match_info.get("msg_id", "")
     file_name = request.rel_url.query.get("name", "Movie File")
@@ -747,8 +756,9 @@ async def watch_handler(request: web.Request):
         raise web.HTTPBadRequest(text="Invalid message ID")
 
     base = BASE_URL.rstrip("/")
-    stream_url = f"{base}/stream/{msg_id}?hash={file_hash}&name={file_name}"
-    download_url = f"{base}/dl/{msg_id}?hash={file_hash}&name={file_name}"
+    encoded_name = quote_plus(file_name)
+    stream_url = f"{base}/stream/{msg_id}?hash={file_hash}&name={encoded_name}"
+    download_url = f"{base}/dl/{msg_id}?hash={file_hash}&name={encoded_name}"
 
     # Detect mime type from file name
     mime_type, _ = mimetypes.guess_type(file_name)
@@ -775,7 +785,8 @@ async def watch_handler(request: web.Request):
 async def stream_download_handler(request: web.Request):
     """Stream or download a file from the DB channel."""
     from config import CHANNEL_ID
-    from bot import Bot
+
+    bot_instance = _active_bot_instance()
 
     msg_id_str = request.match_info.get("msg_id", "")
     file_name = request.rel_url.query.get("name", "")
@@ -786,7 +797,7 @@ async def stream_download_handler(request: web.Request):
         raise web.HTTPBadRequest(text="Invalid message ID")
 
     try:
-        message = await Bot.get_messages(CHANNEL_ID, msg_id)
+        message = await bot_instance.get_messages(CHANNEL_ID, msg_id)
     except Exception as e:
         raise web.HTTPNotFound(text=f"File not found: {e}")
 
@@ -829,7 +840,7 @@ async def stream_download_handler(request: web.Request):
 
     # Stream using Pyrogram's iter_download
     async def file_iter():
-        async for chunk in Bot.stream_media(message, offset=from_bytes, limit=req_length):
+        async for chunk in bot_instance.stream_media(message, offset=from_bytes, limit=req_length):
             yield chunk
 
     return web.Response(
