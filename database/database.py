@@ -128,7 +128,8 @@ class Rohit:
         data = await self.del_timer_data.find_one({})
         if data:
             return data.get('value', 600)
-        return 0
+        # Keep auto-delete enabled by default even when no admin value is set.
+        return 600
 
 
     # CHANNEL MANAGEMENT
