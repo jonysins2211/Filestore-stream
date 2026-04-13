@@ -88,7 +88,7 @@
             box-shadow: 0 8px 24px rgba(0,255,136,0.3);
             color: #000;
         }
-        .btn-stream {
+        .btn-player {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -107,7 +107,7 @@
             max-width: 400px;
             margin: 0 auto;
         }
-        .btn-stream:hover {
+        .btn-player:hover {
             background: rgba(0,255,136,0.1);
             transform: translateY(-3px);
             color: var(--primary);
@@ -144,7 +144,7 @@
         /* Responsive */
         @media (max-width: 576px) {
             .player-container { padding: 0 8px; margin: 16px auto; }
-            .btn-download, .btn-stream { font-size: 0.9rem; padding: 12px 20px; }
+            .btn-download, .btn-player { font-size: 0.9rem; padding: 12px 20px; }
         }
     </style>
 </head>
@@ -175,14 +175,17 @@
         <a href="%s" class="btn-download">
             ⚡ Fast Download
         </a>
-        <a href="%s" class="btn-stream">
-            🖥️ Watch Online / Stream
+        <a href="%s" class="btn-player">
+            ▶️ Play in VLC
+        </a>
+        <a href="%s" class="btn-player">
+            🎬 Play in MX Player
         </a>
     </div>
 
     <!-- Info Card -->
     <div class="info-card">
-        🔔 <span>Note:</span> If video doesn't play, use the <strong>Fast Download</strong> button to download directly.<br>
+        🔔 <span>Note:</span> If video doesn't play in browser, use <strong>VLC</strong> / <strong>MX Player</strong> buttons to open the app directly.<br>
         Join <a href="https://t.me/Movie_loverzz" target="_blank">@Movie_loverzz</a> for more movies & updates!
     </div>
 

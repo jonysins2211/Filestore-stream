@@ -44,6 +44,34 @@ def _is_link_supported_media(message: Message):
         return media
     return None
 
+
+async def _delete_sent_files_after_delay(client: Client, trigger_message: Message, sent_messages: list, delay_seconds: int):
+    await asyncio.sleep(delay_seconds)
+
+    for snt_msg in sent_messages:
+        if snt_msg:
+            try:
+                await snt_msg.delete()
+            except Exception as e:
+                print(f"Error deleting message {getattr(snt_msg, 'id', 'unknown')}: {e}")
+
+    try:
+        reload_url = (
+            f"https://t.me/{client.username}?start={trigger_message.command[1]}"
+            if trigger_message.command and len(trigger_message.command) > 1
+            else None
+        )
+        keyboard = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
+        ) if reload_url else None
+
+        await trigger_message.reply(
+            "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
+            reply_markup=keyboard
+        )
+    except Exception as e:
+        print(f"Error sending deletion confirmation with 'Get File Again' button: {e}")
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
@@ -91,6 +119,10 @@ async def start_command(client: Client, message: Message):
 
     # File auto-delete time in seconds (Set your desired time in seconds here)
     FILE_AUTO_DELETE = await db.get_del_timer()             # Example: 3600 seconds (1 hour)
+    try:
+        FILE_AUTO_DELETE = int(FILE_AUTO_DELETE)
+    except (TypeError, ValueError):
+        FILE_AUTO_DELETE = 0
 
 
     text = message.text
@@ -193,35 +225,12 @@ async def start_command(client: Client, message: Message):
                 pass
 
         if FILE_AUTO_DELETE > 0:
-            notification_msg = await message.reply(
+            await message.reply(
                 f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
             )
-
-            await asyncio.sleep(FILE_AUTO_DELETE)
-
-            for snt_msg in codeflix_msgs:    
-                if snt_msg:
-                    try:    
-                        await snt_msg.delete()  
-                    except Exception as e:
-                        print(f"Error deleting message {snt_msg.id}: {e}")
-
-            try:
-                reload_url = (
-                    f"https://t.me/{client.username}?start={message.command[1]}"
-                    if message.command and len(message.command) > 1
-                    else None
-                )
-                keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
-                ) if reload_url else None
-
-                await notification_msg.edit(
-                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
-                    reply_markup=keyboard
-                )
-            except Exception as e:
-                print(f"Error updating notification with 'Get File Again' button: {e}")
+            asyncio.create_task(
+                _delete_sent_files_after_delay(client, message, codeflix_msgs, FILE_AUTO_DELETE)
+            )
     else:
         reply_markup = InlineKeyboardMarkup(
             [
