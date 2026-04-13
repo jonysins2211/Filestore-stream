@@ -35,6 +35,15 @@ from database.db_premium import *
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+
+def _is_link_supported_media(message: Message):
+    if not message.media:
+        return None
+    media = getattr(message, message.media.value, None)
+    if media and message.media.value in ("video", "document", "audio"):
+        return media
+    return None
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
@@ -162,6 +171,13 @@ async def start_command(client: Client, message: Message):
                        else ("" if not msg.caption else msg.caption.html))
 
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+            media = _is_link_supported_media(msg)
+            if media:
+                generate_button = [InlineKeyboardButton("🔗 Generate Stream/Download Links", callback_data=f"genlnk_{msg.id}")]
+                if reply_markup and getattr(reply_markup, "inline_keyboard", None):
+                    reply_markup = InlineKeyboardMarkup(reply_markup.inline_keyboard + [generate_button])
+                else:
+                    reply_markup = InlineKeyboardMarkup([generate_button])
 
             try:
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
@@ -175,47 +191,6 @@ async def start_command(client: Client, message: Message):
             except Exception as e:
                 print(f"Failed to send message: {e}")
                 pass
-
-            # ── Watch Online / Fast Download button (DP-FILE-STORE style) ──
-            # Only shown for video/document files, not photos
-            try:
-                media = getattr(msg, msg.media.value, None) if msg.media else None
-                if media and msg.media.value in ("video", "document", "audio"):
-                    file_name_raw = getattr(media, "file_name", "") or "file"
-                    from urllib.parse import quote_plus
-                    watch_url = f"{BASE_URL.rstrip('/')}/watch/{msg.id}?hash={getattr(media, 'file_unique_id', '')[:6]}&name={quote_plus(file_name_raw)}"
-                    dl_url    = f"{BASE_URL.rstrip('/')}/dl/{msg.id}?hash={getattr(media, 'file_unique_id', '')[:6]}&name={quote_plus(file_name_raw)}"
-                    stream_btn = InlineKeyboardMarkup([[
-                        InlineKeyboardButton("⚡ Fast Download", url=dl_url),
-                        InlineKeyboardButton("🖥️ Watch Online", url=watch_url),
-                    ]])
-                    stream_msg = await message.reply_text(
-                        "•• ʏᴏᴜ ᴄᴀɴ ᴅᴏᴡɴʟᴏᴀᴅ ᴏʀ ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ ʏᴏᴜʀ ꜰɪʟᴇ ᴄʟɪᴄᴋɪɴɢ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ʙᴇʟᴏᴡ 👇",
-                        reply_markup=stream_btn,
-                        quote=True,
-                        disable_web_page_preview=True
-                    )
-                    codeflix_msgs.append(stream_msg)
-                    # ── Log stream link to LOG_CHANNEL ──
-                    if _LOG_CHANNEL:
-                        try:
-                            u = message.from_user
-                            uname_log = f"@{u.username}" if u.username else "No Username"
-                            await client.send_message(
-                                _LOG_CHANNEL,
-                                f"<b>#StreamLink</b>\n\n"
-                                f"👤 <b>User:</b> <a href='tg://user?id={u.id}'>{u.first_name}</a>\n"
-                                f"🔗 <b>Username:</b> {uname_log}\n"
-                                f"🆔 <b>ID:</b> <code>{u.id}</code>\n"
-                                f"📄 <b>File:</b> <code>{file_name_raw}</code>\n"
-                                f"⚡ <b>Download:</b> {dl_url}\n"
-                                f"🖥️ <b>Watch:</b> {watch_url}",
-                                disable_web_page_preview=True
-                            )
-                        except Exception as e:
-                            print(f"Stream log error: {e}")
-            except Exception as e:
-                print(f"Stream button error: {e}")
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
